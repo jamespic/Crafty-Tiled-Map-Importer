@@ -1,9 +1,10 @@
 Crafty.c "TiledLevel",
     makeTiles : (ts, drawType) ->
-        {image: tsImage, firstgid: tNum, imagewidth: tsWidth} =ts
+        {image: tsImage, firstgid: firstgid, imagewidth: tsWidth} =ts
         {imageheight: tsHeight, tilewidth: tWidth, tileheight: tHeight} = ts
         {tileproperties: tsProperties} = ts
         #console.log ts
+        tNum = firstgid
         xCount = tsWidth/tWidth | 0
         yCount = tsHeight/tHeight | 0
         sMap = {}
@@ -17,9 +18,9 @@ Crafty.c "TiledLevel",
             sMap[sName] = [posx, posy]
             components = "2D, #{drawType}, #{sName}, MapTile"
             if tsProperties
-                if tsProperties[tNum - 1]
-                    if tsProperties[tNum - 1]["components"]
-                        components += ", #{tsProperties[tNum - 1]["components"]}"
+                if tsProperties[tNum - firstgid]
+                    if tsProperties[tNum - firstgid]["components"]
+                        components += ", #{tsProperties[tNum - firstgid]["components"]}"
             #console.log components
             Crafty.c tName,
                 comp: components
