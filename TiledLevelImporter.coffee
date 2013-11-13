@@ -13,26 +13,23 @@ Crafty.c "TiledLevel",
             sName = "tileSprite#{tNum}"
             tName = "tile#{tNum}"
             sMap[sName] = [posx, posy]
-            components = "2D, #{drawType}, #{sName}, MapTile"
-            properties = {}
+            nComp = 
+                comp: "2D, #{drawType}, #{sName}, MapTile"
+                prop: {}
+                init: ->
+                    @addComponent(@comp)
+                    @attr(@prop)
             buildProperties = (props) ->
                 if props?
                     for name, value of props
                         if name == "components"
-                            components += ", #{value}"
+                            nComp.comp += ", #{value}"
                         else
-                            properties[name] = value
+                            nComp.prop[name] = value
                 null
-            buildProperties(genericProperties)
-            buildProperties(tsProperties[tNum - firstgid]) if tsProperties
-            Crafty.c tName,
-                comp: components
-                prop: properties
-                init: ->
-                    @addComponent(@comp)
-                    for name, value of @prop
-                        @[name] = value
-                    @
+            buildProperties genericProperties
+            buildProperties tsProperties[tNum - firstgid] if tsProperties
+            Crafty.c tName, nComp
             tNum++ 
         Crafty.sprite(tWidth, tHeight, tsImage, sMap)
         return null
@@ -46,7 +43,20 @@ Crafty.c "TiledLevel",
         return null
     
     makeObjectLayer: (layer) ->
-        []
+        layerDetails = []
+        for obj in layer.objects
+            {gid: gid, width: w, height: h, x: x, y: y, properties: props} = obj
+            components = if gid then "tile#{gid}" else "MapObject, 2D"
+            components += ", #{props.components}" if props and props.components
+            e = Crafty.e(components)
+            e.x = x
+            e.y = y
+            e.h = h > 0
+            e.w = w > 0
+            for name, value of props
+                if name != "components"
+                    e[name] = value
+        layerDetails
     
     makeTileLayer : (layer) ->
         {data: lData, width: lWidth, height: lHeight} = layer

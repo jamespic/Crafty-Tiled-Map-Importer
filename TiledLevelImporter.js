@@ -2,7 +2,7 @@
 (function() {
   Crafty.c("TiledLevel", {
     makeTiles: function(ts, drawType) {
-      var buildProperties, components, firstgid, genericProperties, i, posx, posy, properties, sMap, sName, tHeight, tName, tNum, tWidth, tsHeight, tsImage, tsProperties, tsWidth, xCount, yCount, _i, _ref;
+      var buildProperties, firstgid, genericProperties, i, nComp, posx, posy, sMap, sName, tHeight, tName, tNum, tWidth, tsHeight, tsImage, tsProperties, tsWidth, xCount, yCount, _i, _ref;
       tsImage = ts.image, firstgid = ts.firstgid, tsWidth = ts.imagewidth;
       tsHeight = ts.imageheight, tWidth = ts.tilewidth, tHeight = ts.tileheight;
       tsProperties = ts.tileproperties, genericProperties = ts.properties;
@@ -16,17 +16,23 @@
         sName = "tileSprite" + tNum;
         tName = "tile" + tNum;
         sMap[sName] = [posx, posy];
-        components = "2D, " + drawType + ", " + sName + ", MapTile";
-        properties = {};
+        nComp = {
+          comp: "2D, " + drawType + ", " + sName + ", MapTile",
+          prop: {},
+          init: function() {
+            this.addComponent(this.comp);
+            return this.attr(this.prop);
+          }
+        };
         buildProperties = function(props) {
           var name, value;
           if (props != null) {
             for (name in props) {
               value = props[name];
               if (name === "components") {
-                components += ", " + value;
+                nComp.comp += ", " + value;
               } else {
-                properties[name] = value;
+                nComp.prop[name] = value;
               }
             }
           }
@@ -36,20 +42,7 @@
         if (tsProperties) {
           buildProperties(tsProperties[tNum - firstgid]);
         }
-        Crafty.c(tName, {
-          comp: components,
-          prop: properties,
-          init: function() {
-            var name, value, _ref1;
-            this.addComponent(this.comp);
-            _ref1 = this.prop;
-            for (name in _ref1) {
-              value = _ref1[name];
-              this[name] = value;
-            }
-            return this;
-          }
-        });
+        Crafty.c(tName, nComp);
         tNum++;
       }
       Crafty.sprite(tWidth, tHeight, tsImage, sMap);
@@ -71,7 +64,33 @@
       return null;
     },
     makeObjectLayer: function(layer) {
-      return [];
+      var components, e, gid, h, layerDetails, name, obj, props, value, w, x, y, _i, _len, _ref;
+      layerDetails = [];
+      _ref = layer.objects;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        obj = _ref[_i];
+        gid = obj.gid, w = obj.width, h = obj.height, x = obj.x, y = obj.y, props = obj.properties;
+        components = gid ? "tile" + gid : "2D, MapObject";
+        if (props && props.components) {
+          components += ", " + props.components;
+        }
+        e = Crafty.e(components);
+        e.x = x;
+        e.y = y;
+        if ((h != null) && h !== 0) {
+          e.h = h;
+        }
+        if ((w != null) && w !== 0) {
+          e.w = w;
+        }
+        for (name in props) {
+          value = props[name];
+          if (name !== "components") {
+            e[name] = value;
+          }
+        }
+      }
+      return layerDetails;
     },
     makeTileLayer: function(layer) {
       var i, lData, lHeight, lWidth, layerDetails, tDatum, tile, _i, _len;
