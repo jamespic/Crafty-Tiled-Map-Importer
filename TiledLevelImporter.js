@@ -2,10 +2,10 @@
 (function() {
   Crafty.c("TiledLevel", {
     makeTiles: function(ts, drawType) {
-      var components, firstgid, i, posx, posy, sMap, sName, tHeight, tName, tNum, tWidth, tsHeight, tsImage, tsProperties, tsWidth, xCount, yCount, _i, _ref;
+      var buildProperties, components, firstgid, genericProperties, i, posx, posy, properties, sMap, sName, tHeight, tName, tNum, tWidth, tsHeight, tsImage, tsProperties, tsWidth, xCount, yCount, _i, _ref;
       tsImage = ts.image, firstgid = ts.firstgid, tsWidth = ts.imagewidth;
       tsHeight = ts.imageheight, tWidth = ts.tilewidth, tHeight = ts.tileheight;
-      tsProperties = ts.tileproperties;
+      tsProperties = ts.tileproperties, genericProperties = ts.properties;
       tNum = firstgid;
       xCount = tsWidth / tWidth | 0;
       yCount = tsHeight / tHeight | 0;
@@ -17,17 +17,36 @@
         tName = "tile" + tNum;
         sMap[sName] = [posx, posy];
         components = "2D, " + drawType + ", " + sName + ", MapTile";
-        if (tsProperties) {
-          if (tsProperties[tNum - firstgid]) {
-            if (tsProperties[tNum - firstgid]["components"]) {
-              components += ", " + tsProperties[tNum - firstgid]["components"];
+        properties = {};
+        buildProperties = function(props) {
+          var name, value;
+          if (props != null) {
+            for (name in props) {
+              value = props[name];
+              if (name === "components") {
+                components += ", " + value;
+              } else {
+                properties[name] = value;
+              }
             }
           }
+          return null;
+        };
+        buildProperties(genericProperties);
+        if (tsProperties) {
+          buildProperties(tsProperties[tNum - firstgid]);
         }
         Crafty.c(tName, {
           comp: components,
+          prop: properties,
           init: function() {
+            var name, value, _ref1;
             this.addComponent(this.comp);
+            _ref1 = this.prop;
+            for (name in _ref1) {
+              value = _ref1[name];
+              this[name] = value;
+            }
             return this;
           }
         });
@@ -37,6 +56,24 @@
       return null;
     },
     makeLayer: function(layer) {
+      var layerDetails;
+      layerDetails = (function() {
+        switch (layer.type) {
+          case "tilelayer":
+            return this.makeTileLayer(layer);
+          case "objectgroup":
+            return this.makeObjectLayer(layer);
+          default:
+            return [];
+        }
+      }).call(this);
+      this._layerArray.push(layerDetails);
+      return null;
+    },
+    makeObjectLayer: function(layer) {
+      return [];
+    },
+    makeTileLayer: function(layer) {
       var i, lData, lHeight, lWidth, layerDetails, tDatum, tile, _i, _len;
       lData = layer.data, lWidth = layer.width, lHeight = layer.height;
       layerDetails = {
@@ -53,8 +90,7 @@
           layerDetails.tiles[i] = tile;
         }
       }
-      this._layerArray.push(layerDetails);
-      return null;
+      return layerDetails;
     },
     tiledLevel: function(levelURL, drawType) {
       var _this = this;

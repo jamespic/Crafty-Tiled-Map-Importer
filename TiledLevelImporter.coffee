@@ -2,38 +2,53 @@ Crafty.c "TiledLevel",
     makeTiles : (ts, drawType) ->
         {image: tsImage, firstgid: firstgid, imagewidth: tsWidth} =ts
         {imageheight: tsHeight, tilewidth: tWidth, tileheight: tHeight} = ts
-        {tileproperties: tsProperties} = ts
-        #console.log ts
+        {tileproperties: tsProperties, properties: genericProperties} = ts
         tNum = firstgid
         xCount = tsWidth/tWidth | 0
         yCount = tsHeight/tHeight | 0
         sMap = {}
-        #Crafty.load [tsImage], ->
         for i in [0...yCount * xCount] by 1
-            #console.log _ref
             posx = i % xCount
             posy = i / xCount | 0 
             sName = "tileSprite#{tNum}"
             tName = "tile#{tNum}"
             sMap[sName] = [posx, posy]
             components = "2D, #{drawType}, #{sName}, MapTile"
-            if tsProperties
-                if tsProperties[tNum - firstgid]
-                    if tsProperties[tNum - firstgid]["components"]
-                        components += ", #{tsProperties[tNum - firstgid]["components"]}"
-            #console.log components
+            properties = {}
+            buildProperties = (props) ->
+                if props?
+                    for name, value of props
+                        if name == "components"
+                            components += ", #{value}"
+                        else
+                            properties[name] = value
+                null
+            buildProperties(genericProperties)
+            buildProperties(tsProperties[tNum - firstgid]) if tsProperties
             Crafty.c tName,
                 comp: components
+                prop: properties
                 init: ->
                     @addComponent(@comp)
+                    for name, value of @prop
+                        @[name] = value
                     @
             tNum++ 
-        #console.log sMap
         Crafty.sprite(tWidth, tHeight, tsImage, sMap)
         return null
 
     makeLayer : (layer) ->
-        #console.log layer
+        layerDetails = switch layer.type
+            when "tilelayer" then @makeTileLayer layer
+            when "objectgroup" then @makeObjectLayer layer
+            else []
+        @_layerArray.push(layerDetails)
+        return null
+    
+    makeObjectLayer: (layer) ->
+        []
+    
+    makeTileLayer : (layer) ->
         {data: lData, width: lWidth, height: lHeight} = layer
         layerDetails = {tiles:[], width:lWidth, height:lHeight}
 
@@ -42,12 +57,8 @@ Crafty.c "TiledLevel",
                 tile = Crafty.e "tile#{tDatum}"
                 tile.x = (i % lWidth) * tile.w
                 tile.y = (i / lWidth | 0) * tile.h
-                #tile.attr({x: (i % lWidth) * tile.w, y: (i  / lWidth | 0) * tile.h})
-                #console.log "#{tile.x} #{tile.y}"
                 layerDetails.tiles[i] = tile
-
-        @_layerArray.push(layerDetails)
-        return null
+        layerDetails
 
     tiledLevel : (levelURL, drawType) ->
         $.ajax
