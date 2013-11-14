@@ -67,7 +67,6 @@
     },
     makeObjectLayer: function(layer) {
       var components, e, gid, h, layerDetails, name, obj, props, value, w, x, y, _i, _len, _ref;
-      console.log(this.tileHeights);
       layerDetails = [];
       _ref = layer.objects;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -77,7 +76,6 @@
         if (props && props.components) {
           components += ", " + props.components;
         }
-        console.log(gid);
         e = Crafty.e(components);
         e.x = x;
         e.y = y;
