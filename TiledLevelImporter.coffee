@@ -3,11 +3,13 @@ Crafty.c "TiledLevel",
         {image: tsImage, firstgid: firstgid, imagewidth: tsWidth} =ts
         {imageheight: tsHeight, tilewidth: tWidth, tileheight: tHeight} = ts
         {tileproperties: tsProperties, properties: genericProperties} = ts
+        @tileHeights = {}
         tNum = firstgid
         xCount = tsWidth/tWidth | 0
         yCount = tsHeight/tHeight | 0
         sMap = {}
         for i in [0...yCount * xCount] by 1
+            @tileHeights[tNum] = tHeight
             posx = i % xCount
             posy = i / xCount | 0 
             sName = "tileSprite#{tNum}"
@@ -43,16 +45,19 @@ Crafty.c "TiledLevel",
         return null
     
     makeObjectLayer: (layer) ->
+        console.log(@tileHeights)
         layerDetails = []
         for obj in layer.objects
             {gid: gid, width: w, height: h, x: x, y: y, properties: props} = obj
             components = if gid then "tile#{gid}" else "MapObject, 2D"
             components += ", #{props.components}" if props and props.components
+            console.log(gid)
             e = Crafty.e(components)
             e.x = x
             e.y = y
-            e.h = h > 0
-            e.w = w > 0
+            e.y -= @tileHeights[gid] if gid
+            e.h = h if h > 0
+            e.w = w if w > 0
             for name, value of props
                 if name != "components"
                     e[name] = value
