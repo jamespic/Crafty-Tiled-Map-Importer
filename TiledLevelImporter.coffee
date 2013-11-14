@@ -45,13 +45,11 @@ Crafty.c "TiledLevel",
         return null
     
     makeObjectLayer: (layer) ->
-        console.log(@tileHeights)
         layerDetails = []
         for obj in layer.objects
             {gid: gid, width: w, height: h, x: x, y: y, properties: props} = obj
             components = if gid then "tile#{gid}" else "MapObject, 2D"
             components += ", #{props.components}" if props and props.components
-            console.log(gid)
             e = Crafty.e(components)
             e.x = x
             e.y = y
