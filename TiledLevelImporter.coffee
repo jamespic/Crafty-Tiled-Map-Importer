@@ -1,9 +1,18 @@
+intRegex = /\d+/
+floatRegex = /\d+\.\d+/
+boolRegex = /true|false/
+parseProp = (v) -> switch
+    when intRegex.test v then parseInt v
+    when floatRegex.test v  then parseFloat v
+    when boolRegex.test v then v == "true"
+    else v
+
 Crafty.c "TiledLevel",
     makeTiles : (ts, drawType) ->
         {image: tsImage, firstgid: firstgid, imagewidth: tsWidth} =ts
         {imageheight: tsHeight, tilewidth: tWidth, tileheight: tHeight} = ts
         {tileproperties: tsProperties, properties: genericProperties} = ts
-        @tileHeights = {}
+        @tileHeights ||= {}
         tNum = firstgid
         xCount = tsWidth/tWidth | 0
         yCount = tsHeight/tHeight | 0
@@ -27,7 +36,7 @@ Crafty.c "TiledLevel",
                         if name == "components"
                             nComp.comp += ", #{value}"
                         else
-                            nComp.prop[name] = value
+                            nComp.prop[name] = parseProp value
                 null
             buildProperties genericProperties
             buildProperties tsProperties[tNum - firstgid] if tsProperties
@@ -58,7 +67,7 @@ Crafty.c "TiledLevel",
             e.w = w if w > 0
             for name, value of props
                 if name != "components"
-                    e[name] = value
+                    e[name] = parseProp value
         layerDetails
     
     makeTileLayer : (layer) ->
