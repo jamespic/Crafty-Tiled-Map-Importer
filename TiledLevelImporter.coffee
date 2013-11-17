@@ -67,7 +67,9 @@ Crafty.c "TiledLevel",
             e.w = w if w > 0
             for name, value of props
                 if name != "components"
-                    e[name] = parseProp value
+                    p = {}
+                    p[name] = value
+                    e.attr p
         layerDetails
     
     makeTileLayer : (layer) ->
