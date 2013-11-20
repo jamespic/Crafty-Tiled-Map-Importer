@@ -1,10 +1,10 @@
-intRegex = /\d+/
-floatRegex = /\d+\.\d+/
-boolRegex = /true|false/
+intRegex = /^\d+$/
+floatRegex = /^\d+\.\d+$/
+boolRegex = /^(true|false)$/
 parseProp = (v) -> switch
-    when intRegex.test v then parseInt v
-    when floatRegex.test v  then parseFloat v
-    when boolRegex.test v then v == "true"
+    when intRegex.test(v) then parseInt v
+    when floatRegex.test(v) then parseFloat v
+    when boolRegex.test(v) then v == "true"
     else v
 
 Crafty.c "TiledLevel",
@@ -68,7 +68,7 @@ Crafty.c "TiledLevel",
             for name, value of props
                 if name != "components"
                     p = {}
-                    p[name] = value
+                    p[name] = parseProp value
                     e.attr p
         layerDetails
     

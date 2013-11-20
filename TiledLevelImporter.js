@@ -2,11 +2,11 @@
 (function() {
   var boolRegex, floatRegex, intRegex, parseProp;
 
-  intRegex = /\d+/;
+  intRegex = /^\d+$/;
 
-  floatRegex = /\d+\.\d+/;
+  floatRegex = /^\d+\.\d+$/;
 
-  boolRegex = /true|false/;
+  boolRegex = /^(true|false)$/;
 
   parseProp = function(v) {
     switch (false) {
@@ -113,7 +113,7 @@
           value = props[name];
           if (name !== "components") {
             p = {};
-            p[name] = value;
+            p[name] = parseProp(value);
             e.attr(p);
           }
         }
